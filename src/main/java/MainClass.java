@@ -2,9 +2,9 @@ import org.apache.tika.Tika;
 import org.apache.tika.detect.DefaultDetector;
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.CloseShieldInputStream;
+import org.apache.tika.io.IOUtils;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.mime.MediaType;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -46,11 +46,19 @@ public class MainClass {
 
         System.out.println("########################Using Apache Tika- FileInputStream#################################");
         for (File file1 : file.listFiles()) {
+
             FileInputStream fileInputStream = new FileInputStream(file1);
             TikaInputStream tikaInputStreamStream = TikaInputStream.get(new CloseShieldInputStream(fileInputStream));
-            metadata.set(Metadata.RESOURCE_NAME_KEY, file1.getName());
-           // System.out.println("FileName:" + file1.getName() + "---- Content Type:" + defaultTika.detect(fileInputStream));4
-           System.out.println("FileName:" + file1.getName() + "---- Content Type:" + detector.detect(tikaInputStreamStream,metadata));
+            try {
+                metadata.set(Metadata.RESOURCE_NAME_KEY, file1.getName());
+                // System.out.println("FileName:" + file1.getName() + "---- Content Type:" + defaultTika.detect(fileInputStream));4
+                System.out.println("FileName:" + file1.getName() + "---- Content Type:" + detector.detect(tikaInputStreamStream, metadata).toString());
+            } catch (IOException e) {
+                System.out.println("Failed to determine media type for '" + file1.getName());
+            } finally {
+                IOUtils.closeQuietly(tikaInputStreamStream);
+                fileInputStream.close();
+            }
 
         }
 
